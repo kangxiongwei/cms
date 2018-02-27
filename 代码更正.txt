@@ -1,0 +1,33 @@
+原来的代码的问题：
+在代码中有一些基本问题，以下进行了简单的修正，但是各位在测试的过程之中如果遇到其他问题，请自行在代码中修改
+1、UserController:中listChannels方法中model传入isAdmin修改为uAdmin，因为isAdmin在session中存储了。取的时候有问题。
+2、TopicController：
+     2.1、@AuthMethod(role="ROLE_PUBLISH")要加到upload方法上，否则普通用户不能上传
+     2.2、tree方法没有写完，所有用户都是显示所有栏目，需要设置了让普通用户只能显示自己管理的栏目    
+    @RequestMapping("/treeAll")
+    @AuthMethod(role="ROLE_PUBLISH")
+    public @ResponseBody List<ChannelTree> tree(HttpSession session) {
+        boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
+        User loginUser = (User)session.getAttribute("loginUser");
+        if(isAdmin)
+            return channelService.generateTree();
+        else
+            return groupService.generateUserChannelTree(loginUser.getId());
+    }
+3、freemarker的字符编码问题：
+    cfg.setDefaultEncoding("utf-8");
+    
+
+    public void fprint(Map<String,Object> root,String fname,String outpath) {
+        try {
+            Template template  = getTemplate(fname);
+            template.setEncoding("utf-8");
+            template.process(root, new FileWriterWithEncoding(outpath, "utf-8"));
+        } catch (TemplateException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+4、修正了一些代码中的小问题，具体哪些问题忘记了，
